@@ -1,8 +1,10 @@
 ---
 slug: wiring
+id: om4yddzp39c2
 type: challenge
 title: 'Exercise 1: Wiring Activities and Signals'
-teaser: Move service calls into proper activities with distinct retry policies, then add a signal-based approval gate.
+teaser: Move service calls into proper activities with distinct retry policies, then
+  add a signal-based approval gate.
 notes:
 - type: text
   contents: |-
@@ -47,24 +49,29 @@ notes:
     A WorkflowQuery method lets you read the current state of a paused
     workflow from the outside -- from a CLI, a dashboard, or another service.
 tabs:
-- title: Terminal 1 - Worker
+- id: 28uutmab6of1
+  title: Terminal 1 - Worker
   type: terminal
   hostname: workshop
   workdir: /root/workshop/exercise
-- title: Terminal 2 - Starter
+- id: rb37hkuny8ap
+  title: Terminal 2 - Starter
   type: terminal
   hostname: workshop
   workdir: /root/workshop/exercise
-- title: VS Code
+- id: fziqfiulxafr
+  title: VS Code
   type: service
   hostname: workshop
   port: 8080
-- title: Temporal UI
+- id: xazvhlccrhqk
+  title: Temporal UI
   type: service
   hostname: workshop
   port: 8233
 difficulty: basic
 timelimit: 3000
+enhanced_loading: null
 ---
 
 # Exercise 1: Wiring Activities and Signals

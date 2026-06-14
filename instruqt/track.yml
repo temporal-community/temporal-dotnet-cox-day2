@@ -1,6 +1,8 @@
 slug: temporal-dotnet-cox-day2
+id: hlwv4azmksr0
 title: Temporal .NET -- Cox Automotive Day 2
-teaser: Wire activities with real retry policies, add a signal approval gate, then implement the Saga pattern for distributed compensation.
+teaser: Wire activities with real retry policies, add a signal approval gate, then
+  implement the Saga pattern for distributed compensation.
 description: |-
   Day 2 of the Cox Automotive Temporal Dev Day.
 
@@ -17,16 +19,16 @@ description: |-
 icon: ""
 tags:
 - dotnet
+- cox-automotive
 - hands-on
 - csharp
 - temporal
-- cox-automotive
 owner: temporal
 developers:
 - marcus.merrell@temporal.io
+maintenance: true
 idle_timeout: 900
 timelimit: 14400
-maintenance: true
 lab_config:
   extend_ttl: 900
   sidebar_enabled: true
@@ -43,3 +45,5 @@ lab_config:
   hideStopButton: false
   default_layout: AssignmentLeft
   default_layout_sidebar_size: 35
+checksum: "16851742172522884894"
+enhanced_loading: false
