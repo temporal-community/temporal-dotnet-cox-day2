@@ -26,18 +26,21 @@ if ! dotnet build -q 2>&1; then
 fi
 pass "Project compiles"
 
-COMPENSATION_RAN=$(temporal workflow list \
+# Extract workflow IDs from the list output (second column)
+COMPENSATION_RAN=0
+while IFS= read -r wfid; do
+    [[ -z "$wfid" ]] && continue
+    count=$(temporal workflow show \
+        --address 127.0.0.1:7233 \
+        --namespace default \
+        --workflow-id "$wfid" 2>/dev/null | \
+        grep -c "RefundPaymentAsync" || true)
+    COMPENSATION_RAN=$((COMPENSATION_RAN + count))
+done < <(temporal workflow list \
     --address 127.0.0.1:7233 \
     --namespace default \
     --query 'TaskQueue="vehicle-transaction"' \
-    --limit 20 2>/dev/null | grep -o '[a-zA-Z0-9_-]*vehicle-tx[a-zA-Z0-9_-]*' | \
-    while read wfid; do
-        temporal workflow show \
-            --address 127.0.0.1:7233 \
-            --namespace default \
-            --workflow-id "$wfid" 2>/dev/null | \
-            grep -c "RefundPaymentAsync" || true
-    done | awk '{s+=$1} END {print s+0}')
+    --limit 20 2>/dev/null | awk 'NR>1 && $2 != "" {print $2}')
 
 if [[ "${COMPENSATION_RAN:-0}" -lt 1 ]]; then
     fail "No RefundPaymentAsync compensation found in workflow history. Run a few workflows -- title transfer fails ~60% of the time, which will trigger the refund compensation."
