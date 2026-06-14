@@ -59,6 +59,11 @@ tabs:
   type: terminal
   hostname: workshop
   workdir: /root/workshop/exercise
+- id: 9tieus0hszsj
+  title: Terminal 3 - Signal/Query
+  type: terminal
+  hostname: workshop
+  workdir: /root/workshop/exercise
 - id: fziqfiulxafr
   title: VS Code
   type: service
@@ -77,11 +82,11 @@ enhanced_loading: null
 # Exercise 1: Wiring Activities and Signals
 
 > [!NOTE]
-> **Tabs:** [button label="Terminal 1 - Worker" background="#444CE7"](tab-0) · [button label="Terminal 2 - Starter" background="#444CE7"](tab-1) · [button label="VS Code" background="#444CE7"](tab-2) · [button label="Temporal UI" background="#444CE7"](tab-3)
+> **Tabs:** [button label="Terminal 1 - Worker" background="#444CE7"](tab-0) · [button label="Terminal 2 - Starter" background="#444CE7"](tab-1) · [button label="Terminal 3 - Signal/Query" background="#444CE7"](tab-2) · [button label="VS Code" background="#444CE7"](tab-3) · [button label="Temporal UI" background="#444CE7"](tab-4)
 
 ## Stage A -- Wire activities and retry policies (20 min)
 
-Open [button label="VS Code" background="#444CE7"](tab-2) and look at `VehicleTransactionWorkflow.cs`.
+Open [button label="VS Code" background="#444CE7"](tab-3) and look at `VehicleTransactionWorkflow.cs`.
 The workflow calls `FraudService`, `PaymentService`, and `TitleService` directly.
 
 **Step 1: Move the service calls into `VehicleTransactionActivities.cs`.**
@@ -118,7 +123,7 @@ Run a standard order in [button label="Terminal 2 - Starter" background="#444CE7
 dotnet run -- starter
 ```
 
-Open [button label="Temporal UI" background="#444CE7"](tab-3) and find the workflow. Each activity
+Open [button label="Temporal UI" background="#444CE7"](tab-4) and find the workflow. Each activity
 should appear as a separate entry in the event history. Try killing the worker
 mid-run with Ctrl+C and restarting -- does the workflow pick up where it left off?
 
@@ -144,28 +149,27 @@ Return a `WorkflowStatus` with the three state fields. No `await`, no mutation.
 
 Restart the worker in [button label="Terminal 1 - Worker" background="#444CE7"](tab-0).
 
-Submit a high-value order in [button label="Terminal 2 - Starter" background="#444CE7"](tab-1):
+Submit a high-value order in [button label="Terminal 2 - Starter" background="#444CE7"](tab-1)
+(it will pause waiting for approval):
 
 ```bash,run
 dotnet run -- starter high
 ```
 
-The terminal will pause -- the workflow is waiting for approval. Note the workflow ID printed.
-
-Query the paused workflow:
+In [button label="Terminal 3 - Signal/Query" background="#444CE7"](tab-2), query the paused workflow:
 
 ```bash,run
 dotnet run -- query vehicle-tx-VIN-2026-COXAUTO-006
 ```
 
-Send the approval signal:
+Then send the approval signal:
 
 ```bash,run
 dotnet run -- approve vehicle-tx-VIN-2026-COXAUTO-006
 ```
 
 Watch [button label="Terminal 2 - Starter" background="#444CE7"](tab-1) -- the workflow resumes and completes.
-In [button label="Temporal UI" background="#444CE7"](tab-3), find the `WorkflowSignalReceived` event in the
+In [button label="Temporal UI" background="#444CE7"](tab-4), find the `WorkflowSignalReceived` event in the
 history. Notice the gap between that event and the `ActivityTaskScheduled` for payment.
 
 Click **Check** when at least one high-value workflow completes after receiving the approval signal.
