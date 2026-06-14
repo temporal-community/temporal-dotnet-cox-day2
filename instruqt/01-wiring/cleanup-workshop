@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+pkill -f "dotnet run" || true
+echo "Exercise 1 cleaned up."

@@ -1,0 +1,45 @@
+slug: temporal-dotnet-cox-day2
+title: Temporal .NET -- Cox Automotive Day 2
+teaser: Wire activities with real retry policies, add a signal approval gate, then implement the Saga pattern for distributed compensation.
+description: |-
+  Day 2 of the Cox Automotive Temporal Dev Day.
+
+  Two hands-on exercises built on the vehicle transaction domain from Day 1.
+
+  Exercise 1 (two stages): start from a workflow that calls downstream services
+  directly -- the same mistake as the original pipeline -- and fix it. Stage A
+  moves the calls into proper activity methods with distinct retry policies.
+  Stage B adds a signal handler and approval gate for high-value transactions.
+
+  Exercise 2: implement the Saga pattern. When title transfer fails after payment
+  has already succeeded, a compensation stack unwinds the completed steps in
+  reverse, leaving no money charged and no orphaned records.
+icon: ""
+tags:
+- dotnet
+- hands-on
+- csharp
+- temporal
+- cox-automotive
+owner: temporal
+developers:
+- marcus.merrell@temporal.io
+idle_timeout: 900
+timelimit: 14400
+maintenance: true
+lab_config:
+  extend_ttl: 900
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages:
+  - Restoring NuGet packages...
+  - Spinning up the Temporal dev server...
+  - Provisioning your durable sandbox...
+  - Almost there -- warming up the .NET runtime...
+  theme:
+    name: modern-dark
+  override_challenge_layout: true
+  hideStopButton: false
+  default_layout: AssignmentLeft
+  default_layout_sidebar_size: 35

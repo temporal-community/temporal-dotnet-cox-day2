@@ -1,0 +1,33 @@
+#!/bin/bash
+# ABOUTME: Track-level setup. Runs once when the attendee enters the track.
+# Everything heavy is baked into the image. This script:
+#   1. Stages /opt/workshop -> /root/workshop (attendee's writable copy)
+#   2. Starts Temporal dev server and code-server
+#   3. Waits for Temporal health
+set -euo pipefail
+
+rm -rf /root/workshop
+cp -r /opt/workshop /root/workshop
+
+nohup temporal server start-dev \
+    --ip 0.0.0.0 \
+    --ui-port 8233 \
+    --db-filename /root/temporal.db \
+    --log-level warn \
+    > /tmp/temporal-server.log 2>&1 &
+
+nohup code-server \
+    --host 0.0.0.0 \
+    --port 8080 \
+    --auth none \
+    /root/workshop \
+    > /tmp/code-server.log 2>&1 &
+
+echo "Waiting for Temporal dev server..."
+for i in $(seq 1 60); do
+    if temporal operator cluster health --address 127.0.0.1:7233 >/dev/null 2>&1; then
+        echo "Temporal server healthy."
+        break
+    fi
+    sleep 1
+done

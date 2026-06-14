@@ -1,0 +1,48 @@
+#!/bin/bash
+set -euo pipefail
+fail() { echo "FAIL: $1"; exit 1; }
+pass() { echo "PASS: $1"; }
+
+WORKFLOW="/root/workshop/exercise/VehicleTransactionWorkflow.cs"
+
+if grep -v '^\s*//' "$WORKFLOW" | grep -q "NotImplementedException"; then
+    fail "VehicleTransactionWorkflow.cs still has unimplemented stubs."
+fi
+pass "Stubs implemented"
+
+if ! grep -q "Stack" "$WORKFLOW"; then
+    fail "No Stack found. Use a Stack<Func<Task>> to hold compensation actions."
+fi
+pass "Compensation stack present"
+
+if ! grep -q "catch" "$WORKFLOW"; then
+    fail "No catch block found. Compensations must run inside a catch block."
+fi
+pass "Catch block present"
+
+cd /root/workshop/exercise
+if ! dotnet build -q 2>&1; then
+    fail "Project does not compile."
+fi
+pass "Project compiles"
+
+COMPENSATION_RAN=$(temporal workflow list \
+    --address 127.0.0.1:7233 \
+    --namespace default \
+    --query 'TaskQueue="vehicle-transaction"' \
+    --limit 20 2>/dev/null | grep -o '[a-zA-Z0-9_-]*vehicle-tx[a-zA-Z0-9_-]*' | \
+    while read wfid; do
+        temporal workflow show \
+            --address 127.0.0.1:7233 \
+            --namespace default \
+            --workflow-id "$wfid" 2>/dev/null | \
+            grep -c "RefundPaymentAsync" || true
+    done | awk '{s+=$1} END {print s+0}')
+
+if [[ "${COMPENSATION_RAN:-0}" -lt 1 ]]; then
+    fail "No RefundPaymentAsync compensation found in workflow history. Run a few workflows -- title transfer fails ~60% of the time, which will trigger the refund compensation."
+fi
+pass "Compensation (RefundPaymentAsync) observed in workflow history"
+
+echo "Exercise 2 complete."
+exit 0

@@ -1,0 +1,3 @@
+#!/bin/bash
+pkill -f "dotnet run" || true
+echo "done"

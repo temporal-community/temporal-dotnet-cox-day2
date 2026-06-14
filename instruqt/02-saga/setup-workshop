@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+pkill -f "dotnet run" || true
+rm -rf /root/workshop/exercise /root/workshop/solution
+cp -r /root/workshop/exercises/05_saga/practice /root/workshop/exercise
+cp -r /root/workshop/exercises/05_saga/solution /root/workshop/solution
+echo "Exercise 2 ready."

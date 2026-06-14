@@ -1,0 +1,85 @@
+#!/bin/bash
+set -euo pipefail
+fail() { echo "FAIL: $1"; exit 1; }
+pass() { echo "PASS: $1"; }
+
+ACTIVITIES="/root/workshop/exercise/VehicleTransactionActivities.cs"
+WORKFLOW="/root/workshop/exercise/VehicleTransactionWorkflow.cs"
+PROGRAM="/root/workshop/exercise/Program.cs"
+
+# Stage A checks
+if ! grep -q "\[Activity\]" "$ACTIVITIES"; then
+    fail "No [Activity] attributes found in VehicleTransactionActivities.cs. Implement the three activity methods."
+fi
+pass "Activity attributes present"
+
+if ! grep -q "ExecuteActivityAsync" "$WORKFLOW"; then
+    fail "No Workflow.ExecuteActivityAsync calls found in the workflow. Replace the direct service calls."
+fi
+pass "ExecuteActivityAsync used in workflow"
+
+if ! grep -q "ActivityOptions" "$WORKFLOW"; then
+    fail "No ActivityOptions defined. Add FraudOptions and PaymentOptions."
+fi
+pass "ActivityOptions defined"
+
+if ! grep -q "AddAllActivities" "$PROGRAM"; then
+    fail "Activities not registered with the worker. Add .AddAllActivities(new VehicleTransactionActivities()) in Program.cs."
+fi
+pass "Activities registered with worker"
+
+# Stage B checks
+if ! grep -q "WorkflowSignal" "$WORKFLOW"; then
+    fail "No [WorkflowSignal] handler found. Implement ApproveTransactionAsync."
+fi
+pass "Signal handler present"
+
+if ! grep -q "WorkflowQuery" "$WORKFLOW"; then
+    fail "No [WorkflowQuery] handler found. Implement GetStatus."
+fi
+pass "Query handler present"
+
+if ! grep -q "WaitConditionAsync" "$WORKFLOW"; then
+    fail "WaitConditionAsync not found. Add the approval gate for high-value orders."
+fi
+pass "WaitConditionAsync used"
+
+# Compile check
+cd /root/workshop/exercise
+if ! dotnet build -q 2>&1; then
+    fail "Project does not compile. Check the terminal for errors."
+fi
+pass "Project compiles"
+
+# Runtime check: at least one workflow completed after receiving a signal
+COMPLETED=$(temporal workflow list \
+    --address 127.0.0.1:7233 \
+    --namespace default \
+    --query 'TaskQueue="vehicle-transaction" AND ExecutionStatus="Completed"' \
+    --limit 20 2>/dev/null | grep -c "Completed" || true)
+
+if [[ "${COMPLETED}" -lt 1 ]]; then
+    fail "No completed workflows found. Run a starter, send the approve signal, and wait for completion."
+fi
+
+# Confirm at least one workflow received a signal (approval gate was exercised)
+SIGNAL_SEEN=$(temporal workflow list \
+    --address 127.0.0.1:7233 \
+    --namespace default \
+    --query 'TaskQueue="vehicle-transaction"' \
+    --limit 20 2>/dev/null | grep -o '[a-zA-Z0-9_-]*vehicle-tx[a-zA-Z0-9_-]*' | \
+    while read wfid; do
+        temporal workflow show \
+            --address 127.0.0.1:7233 \
+            --namespace default \
+            --workflow-id "$wfid" 2>/dev/null | \
+            grep -c "WorkflowExecutionSignaled" || true
+    done | awk '{s+=$1} END {print s+0}')
+
+if [[ "${SIGNAL_SEEN:-0}" -lt 1 ]]; then
+    fail "No signal received in any workflow history. Run 'dotnet run -- starter high' and then send the approve signal."
+fi
+pass "Signal received and workflow completed"
+
+echo "Exercise 1 complete."
+exit 0

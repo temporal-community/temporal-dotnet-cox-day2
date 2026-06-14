@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euo pipefail
+rm -rf /root/workshop/exercise
+cp -r /root/workshop/exercises/06_wiring/solution /root/workshop/exercise
+echo "Exercise 1 solved."

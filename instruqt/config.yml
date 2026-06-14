@@ -1,0 +1,6 @@
+version: "3"
+containers:
+- name: workshop
+  image: mmerrell/temporal-dotnet-cox-day2:latest
+  shell: /bin/bash
+  memory: 4096
